@@ -13,12 +13,12 @@ A more graphical view looks something like this:
     (target)<----(endpoint)---->[firewall/nat]---->(server)<----------(client)
                     ^                                 ^
                     |                                 |
-               runs client.py                     runs server.py
+               runs endpoint.py                     runs server.py
 
   The client connects to the server. The endpoint connects to the server. When the client connects to the server the
   endpoint is told to connect to the target and a tunnel is established.
   
-  _The script named client.py is a little misleading. It is actually the endpoint or tunnel exit. The actual client requires
+  _The actual client requires
   no software to be installed and can be any machine that can access the server over TCP/IP._
   
   _At the moment only TCP/IPv4 is supported. I may added support for more protocols, and even multiple clients later._
