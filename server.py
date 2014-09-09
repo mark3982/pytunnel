@@ -1,21 +1,25 @@
 import socket
 import select
 import struct
+import sys
+import time
 
-def main():
+def main(tunnel, endpoint):
     tss = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tss.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    tss.bind(('0.0.0.0', 61001))
+    tss.bind(tunnel)
 
     ess = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     ess.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    ess.bind(('0.0.0.0', 61002))
+    ess.bind(endpoint)
 
     tss.listen(1)
     ess.listen(1)
 
     tsock = None
     esock = None
+
+    lastping = time.time()
 
     tunnels = []
 
@@ -31,7 +35,15 @@ def main():
             r.append(esock)
             e.append(esock)
 
-        r, w, e = select.select(r, w, e)
+        r, w, e = select.select(r, w, e, 1)
+
+        if time.time() - lastping > 5:
+            lastping = time.time()
+            if tsock is not None:
+                # send a little ping to help the client
+                # determine when the connection has dropped
+                # and it needs to be re-established
+                sendall(tsock, struct.pack('>B', 3))
 
         if tss in r:
             print('tunnel connection')
@@ -69,7 +81,7 @@ def main():
                 data = sock.recv(4096)
             except ConnectionResetError:
                 print('connection reset error')
-                data = b''
+                data = False
             if not data:
                 if tsock is sock:
                     print('tunnel dropped')
@@ -80,6 +92,7 @@ def main():
                     tsock = None
                     continue
                 if esock is sock:
+                    print('client dropped')
                     esock.settimeout(0)
                     sendall(tsock, struct.pack('>B', 0))
                     esock.settimeout(None)
@@ -95,9 +108,10 @@ def main():
                 continue
             if esock is sock:
                 #print('data (client -> tunnel) %s' % len(data))
-                # transform it into the format the T client expects
+                # transform it into the format the tunnel expects
                 if tsock is not None and len(data) > 0:
                     tsock.settimeout(0)
+                    lastping = time.time()
                     sendall(tsock, struct.pack('>BI', 2, len(data)) + data)
                     tsock.settimeout(None)
                 continue
@@ -111,10 +125,22 @@ def sendall(sock, data):
         except BlockingIOError:
             print('blocking io error')
 
-while True:
-    try:
-        main()
-    except Exception as e:
-        print(e)
-        print('failure restarting')
-        continue
+def start():
+    args = sys.argv
+
+    if len(args) < 2:
+        print('<tunnel-port> <endpoint-port>')
+        exit()
+
+    tunnel = int(args[1])
+    endpoint = int(args[2])
+
+    while True:
+        try:
+            main(('0.0.0.0', tunnel), ('0.0.0.0', endpoint))
+        except Exception as e:
+            print(e)
+            print('failure restarting')
+            continue
+
+start()
