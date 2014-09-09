@@ -22,3 +22,31 @@ A more graphical view looks something like this:
   no software to be installed and can be any machine that can access the server over TCP/IP._
   
   _At the moment only TCP/IPv4 is supported. I may added support for more protocols, and even multiple clients later._
+
+
+example
+========  
+
+To serve a website with limitations (mostly just an understandable example).
+
+     python3 server.py 61001 61002
+     python3 endpoint.py mytarget.com:80 myserver.net:61001
+     http://myserver.net:61002
+
+To use VNC with the tunnel. 
+
+     python3 server.py 61001 61002
+     python3 endpoint.py localhost:5900 myserver.net:61001
+     vnc myserver.net::61002
+
+To use SSH with the tunnel.
+
+     python3 server.py 61001 61002
+     python3 endpoint.py localnetserver:22 myserver.net:61001
+     ssh myserver.net:61002
+
+The arguments:
+    
+     python3 server.py <tunnel-port> <client-port>
+     python3 endpoint.py <target-host>:<target-port> <server-host>:<tunnel-port>
+     <application> <server-host>:<tunnel-port>
