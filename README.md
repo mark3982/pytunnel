@@ -25,6 +25,14 @@ _At the moment only TCP/IPv4 is supported. I may added support for more protocol
 endpoint instances. I may even add support for endpoints to authenticate with the server and
 automatically open the desired port._
 
+You need a minimum of two machines. You could run the server on your client system as long
+as the endpoint can connect to it. You have to consider that your client system would need
+a semi-static or semi-permanent host or IP unless you can reconfigure the endpoint when it
+changes. I use three machines in my examples to illustrate my own setups since in mine both
+the endpoint and the client are behind a NAT that can not be transversed using port forwarding. 
+So the internet server acts as the bridge man allowing the client to connect outbound and the
+endpoint to connect outbound.
+
 _Also on my mind is adding SSH support for the tunnel._
 
 You can chain tunnels together for example consider:
@@ -49,15 +57,15 @@ examples
 
 To serve a website with limitations (mostly just an understandable example).
 
-     python3 server.py 61001 61002
-     python3 endpoint.py mytarget.com:80 myserver.net:61001
-     http://myserver.net:61002
+     [myserver.net] python3 server.py 61001 61002
+     [192.168.1.XX] python3 endpoint.py mytarget.com:80 myserver.net:61001
+     [client]       http://myserver.net:61002
 
 To use VNC with the tunnel. 
 
-     python3 server.py 61001 61002
-     python3 endpoint.py localhost:5900 myserver.net:61001
-     vnc myserver.net::61002
+     [myserver.net] python3 server.py 61001 61002
+     [192.168.1.XX] python3 endpoint.py localhost:5900 myserver.net:61001
+     [client]       vnc myserver.net::61002
 
 _This is one I use personally. I have some machines behind a NAT that does not allow
 ports to be forwarded. To overcome this I setup the tunnel and the endpoint machine
@@ -67,20 +75,21 @@ to the VNC server running locally thus overcoming the NAT._
 
 To use SSH with the tunnel.
 
-     python3 server.py 61001 61002
-     python3 endpoint.py localnetserver:22 myserver.net:61001
-     ssh myserver.net:61002
+     [myserver.net] python3 server.py 61001 61002
+     [192.168.1.XX] python3 endpoint.py localnetserver:22 myserver.net:61001
+     [client]       ssh myserver.net:61002
 
 _Also a similar situation where I needed to overcome the NAT. In this case localnetserver could be
 localhost or another computer accessable for example 192.168.1.10 could be a local server and you are unable to install the endpoint directly onto it. Or, in the case you can you would use localhost._
 
 The arguments:
     
-     python3 server.py <tunnel-port> <client-port>
-     python3 endpoint.py <target-host>:<target-port> <server-host>:<tunnel-port>
-     <application> <server-host>:<tunnel-port>
+     [server]   python3 server.py <tunnel-port> <client-port>
+     [endpoint] python3 endpoint.py <target-host>:<target-port> <server-host>:<tunnel-port>
+     [client]   <application> <server-host>:<tunnel-port>
+
 
 _The server simply needs a port to listen on for the endpoint (`tunnel-port`), and a port
 to listen on for the client (`client-port`). The endpoint needs to know the server IP/host
 and the port to connect to, and it needs to know the target (aka destination) for the forwarded
-connection with the `target-host` and `target-port`.
+connection with the `target-host` and `target-port`._
