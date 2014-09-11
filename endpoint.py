@@ -121,5 +121,11 @@ if len(args) < 3:
 server = args[1].split(':')
 target = args[2].split(':')
 
+server[1] = int(server[1])
+target[1] = int(target[1])
+
+server = tuple(server)
+target = tuple(server)
+
 # ('kmcg3413.net', 61001), ('192.168.1.118', 5900)
 main(server, target)
