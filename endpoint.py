@@ -26,6 +26,7 @@ def main(server, local):
                 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)                
                 s.connect(server)
                 s.settimeout(None)
+                lastping = time.time()
             except Exception as e:
                 time.sleep(5)
                 continue
@@ -125,7 +126,7 @@ server[1] = int(server[1])
 target[1] = int(target[1])
 
 server = tuple(server)
-target = tuple(server)
+target = tuple(target)
 
 # ('kmcg3413.net', 61001), ('192.168.1.118', 5900)
 main(server, target)
