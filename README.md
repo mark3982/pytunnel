@@ -51,6 +51,13 @@ The connection is then forwarded from `E1` to `T`. The purpose here would be mor
 SSH was implemented thus encrypting the entire connection across the internet until it reaches
 `E1` which would turn into the application protocol.
 
+windows service
+========  
+You can run python code as a windows service using NSSM, http://nssm.cc/.
+
+Run at the command line after extracting it and picking the correct bit version:
+
+     nssm.exe install
 
 examples
 ========  
